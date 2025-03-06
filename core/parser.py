@@ -15,9 +15,16 @@ STOP_WORDS = [
     # 'снять'
      ]
 
-def clean_title(title: str) -> str:
-    """Очищает заголовок от стоп-слов и обрезает всё, что идёт после них."""
+def clean_title(title: str) -> tuple[str, str]:
+    """
+    Очищает заголовок от стоп-слов, но оставляет категорию.
+    Возвращает кортеж: (очищенный заголовок с категорией, категория).
+    """
     logger.info(f"Принят в обработку title: {title}")
+
+    # Извлекаем категорию (она между двумя |)
+    category_match = re.search(r'\|\s*(.*?)\s*\|', title)
+    category = category_match.group(1).strip() if category_match else ""
 
     # Заменяем символ "|" на запятую
     title = re.sub(r'\s*\|\s*', ', ', title)
@@ -39,8 +46,8 @@ def clean_title(title: str) -> str:
     # Удаляем лишние символы (например, запятые, тире)
     title = re.sub(r'[,-]\s*$', '', title).strip()
 
-    logger.info(f"Результат парсинга: {title}")
-    return title
+    logger.info(f"Результат парсинга: заголовок={title}, категория={category}")
+    return title, category
 
 # Функция для проверки корректности ссылки Avito
 def is_valid_avito_url(url: str) -> bool:
@@ -49,8 +56,12 @@ def is_valid_avito_url(url: str) -> bool:
     pattern = re.compile(r'^https://(www\.|m\.)?avito\.ru/[^/]+/[^/]+/.+$')
     return bool(pattern.match(url))
 
-async def parse_avito(url: str) -> str:
-    """Парсит данные с Avito и возвращает наименование товара из тега <title>."""
+async def parse_avito(url: str) -> tuple[str, str]:
+    """
+    Парсит данные с Avito и возвращает кортеж:
+    - очищенный заголовок,
+    - категория.
+    """
     try:
         # Если ссылка мобильная, заменяем её на десктопную
         if url.startswith("https://m.avito.ru"):
@@ -76,13 +87,13 @@ async def parse_avito(url: str) -> str:
         # Извлекаем содержимое тега <title>
         title = soup.title.string
 
-        # Очищаем заголовок
-        cleaned_title = clean_title(title)
+        # Очищаем заголовок и извлекаем категорию
+        cleaned_title, category = clean_title(title)
 
         # Возвращаем результат
         logger.info(f"Успешно обработана ссылка: {url}")
-        return cleaned_title
+        return cleaned_title, category
 
     except Exception as e:
         logger.error(f"Неожиданная ошибка: {e}")
-        return f"Неожиданная ошибка: {e}"
+        return f"Неожиданная ошибка: {e}", ""

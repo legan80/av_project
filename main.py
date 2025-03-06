@@ -134,7 +134,7 @@ async def handle_avito_link(message: Message):
     processing_message = await message.answer("Ссылка принята. Обрабатываю...")
 
     # Парсим данные
-    result = await parse_avito(url)
+    result, category = await parse_avito(url)
     logger.info(f"Результат парсинга: {result}")
 
     # Генерируем рекламный текст
@@ -148,7 +148,7 @@ async def handle_avito_link(message: Message):
             user_id=user_id,
             message_text=url,
             parsed_title=result,
-            parsed_category="категория",  # Замените на реальную категорию
+            parsed_category=category,
             generated_text=advertisement
         )
 
