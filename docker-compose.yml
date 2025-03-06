@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: avito_db
+    environment:
+      POSTGRES_USER: ваш_пользователь  # Указываем только здесь
+      POSTGRES_PASSWORD: ваш_пароль    # Указываем только здесь
+      POSTGRES_DB: avito_db            # Указываем только здесь
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    ports:
+      - "5432:5432"
+
+  bot:
+    build: .
+    container_name: avito_bot
+    depends_on:
+      - db
+    env_file:
+      - .env  # Передаём файл .env в контейнер
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
