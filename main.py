@@ -7,8 +7,8 @@ from core.keyboards.menu import set_main_menu
 from core.subscribe_check import is_subscribed
 from core.parser import is_valid_avito_url, parse_avito
 from core.channel import publish_to_channel
-from core.database import create_pool, save_user, save_request
-from lexicon.lexicon_ru import start_text_ru, help_text_ru, wrong_link_text_ru
+from core.database import create_pool, save_user, save_request, is_duplicate_url
+from lexicon.lexicon_ru import start_text_ru, help_text_ru, wrong_link_text_ru, duplicated_link_ru
 
 import re
 from aiogram import Dispatcher, types
@@ -128,6 +128,14 @@ async def handle_avito_link(message: Message):
     if not is_valid_avito_url(url):
         logger.warning(f"Некорректная ссылка: {url}")
         await message.answer(text=wrong_link_text_ru)
+        return
+
+    # Проверяем, есть ли такая ссылка среди последних 10 запросов
+    async with pool.acquire() as conn:
+        is_duplicate = await is_duplicate_url(conn, url)
+
+    if is_duplicate:
+        await message.answer(text=duplicated_link_ru)
         return
 
     # Отправляем промежуточное сообщение
