@@ -149,6 +149,11 @@ async def handle_avito_link(message: Message):
     advertisement = await generate_advertisement(result)
     logger.info(f"Сгенерированный текст: {advertisement}")
 
+    # Если генерация текста завершилась ошибкой, уведомляем пользователя
+    if advertisement.startswith("Ой, не могу") or advertisement.startswith("Ошибка"):
+        await message.answer(advertisement)
+        return
+
     # Сохраняем запрос в базу данных
     async with pool.acquire() as conn:
         await save_request(
