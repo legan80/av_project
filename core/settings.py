@@ -7,7 +7,6 @@ bot_token = env('BOT_TOKEN')
 channel_id = env('CHANNEL_ID')
 channel_username = env('CHANNEL_USERNAME')
 openai_key = env('OPENAI_KEY')
-course_api_key = env('COURSE_API_KEY')
 model_api_url = env('MODEL_API_URL')
 
 db = env('DB')
