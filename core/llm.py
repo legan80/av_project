@@ -18,6 +18,7 @@ model_name = "claude-3-haiku-20240307"
 llm = ChatOpenAI(
     openai_api_key=openai_key,
     base_url=model_api_url, model_name=model_name,
+    max_tokens=4096,
     # temperature=0.7 # gpt-3.5-turbo
     temperature=0.7 # claude-3-haiku-20240307
     # temperature=0.8 # gpt-4o-mini
